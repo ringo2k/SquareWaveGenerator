@@ -31,7 +31,7 @@
 const int rs = 9, en = 8, d4 = 7, d5 = 6, d6 = 5, d7 = 4;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
-uint8_t divider = 0;
+uint8_t divider = 1;
 
 void setDeviderOutputs(uint8_t value)
 {
@@ -84,7 +84,7 @@ void setup() {
 void loop() {
   
   static unsigned long lcdUpdateTimer = 0;
-  
+  static char* unit = " Hz";
   
   digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
   
@@ -108,7 +108,7 @@ void loop() {
   
   if (digitalRead(DOWNBUTTON) == LOW) 
   {
-    if (divider > 0)
+    if (divider > 1)
     {
       divider--;
     }
@@ -126,16 +126,31 @@ void loop() {
     {
       lcd.setCursor(7,0);
       lcd.print ("OFF ");
+      unit = " - ";
       
     } else {
-      lcd.setCursor(7,0);
       //lcd.print(divider);
-      float freq = round(BASEFREQ * 100/pow(2,divider));
+      float freq = round(BASEFREQ*100 /pow(2,divider));
+      if (freq >= 1e8)
+      {
+        freq /= 1e6;
+        unit = "MHz";
+      } else if ( freq >= 1e5)
+      {
+        freq /= 1e3;
+        unit = "kHz";
+      } else if (freq < 1e5)
+      {
+        unit = " Hz";
+      }
+      lcd.setCursor(6,0);
       lcd.print(freq/100.0);
     }
     
     lcd.setCursor(0,1);
     lcd.print ("UP          DOWN");
+    lcd.setCursor(6,1);
+    lcd.print (unit);
     setDeviderOutputs(divider);
     
       
